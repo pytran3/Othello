@@ -12,6 +12,9 @@ class Board:
         self.board = board
         self.side = side
 
+    def __str__(self):
+        return "Board (side={}, {})".format(self.side, self.board)
+
     @staticmethod
     def init_board(side: bool = True):
         board = np.zeros((8, 8), dtype=int)
@@ -33,3 +36,6 @@ class Hand:
             raise IllegalIndexException((8, 8), hand)
         self.hand = hand
         self.board = board
+
+    def __str__(self):
+        return "Hand ({})".format(self.hand)
