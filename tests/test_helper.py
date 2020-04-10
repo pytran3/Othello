@@ -21,13 +21,13 @@ class TestJudge(unittest.TestCase):
 class TestExtractHand(unittest.TestCase):
     def test_true_side(self):
         board = Board.init_board()
-        actual = extract_valid_hand(board, True)
+        actual = extract_valid_hand(board)
         expected = [(2, 4), (4, 2), (3, 5), (5, 3)]
         self.assertEquals(set(expected), set(i.hand for i in actual))
 
     def test_false_side(self):
-        board = Board.init_board()
-        actual = extract_valid_hand(board, False)
+        board = Board.init_board(False)
+        actual = extract_valid_hand(board)
         expected = [(2, 3), (3, 2), (4, 5), (5, 4)]
         self.assertEquals(set(expected), set(i.hand for i in actual))
 
@@ -35,17 +35,17 @@ class TestExtractHand(unittest.TestCase):
 class TestIsValidHand(unittest.TestCase):
     def test_valid(self):
         board = Board.init_board()
-        actual = is_valid_hand((3, 5), True, board)
+        actual = is_valid_hand((3, 5), board)
         self.assertTrue(actual)
 
     def test_invalid(self):
-        board = Board.init_board()
-        actual = is_valid_hand((3, 5), False, board)
+        board = Board.init_board(False)
+        actual = is_valid_hand((3, 5), board)
         self.assertFalse(actual)
 
     def test_index_array_of_bound(self):
-        board = Board(np.ones((8, 8)))
+        board = Board(np.ones((8, 8)), False)
         board.board[1][1] = 0
         # errorが起きないことを確認
-        actual = is_valid_hand((1, 1), False, board)
+        actual = is_valid_hand((1, 1), board)
         self.assertFalse(actual)

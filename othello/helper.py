@@ -11,24 +11,24 @@ def simple_score(board: Board, score: ScoreBoard) -> float:
     return (board.board * score.board).sum()
 
 
-def extract_valid_hand(board: Board, side: bool) -> List[Hand]:
+def extract_valid_hand(board: Board) -> List[Hand]:
     ret = []
     for i in range(8):
         for j in range(8):
-            if is_valid_hand((i, j), side, board):
+            if is_valid_hand((i, j), board):
                 ret.append(Hand((i, j), board))
     return ret
 
 
-def is_valid_hand(hand: Union[Hand, Tuple[int, int]], side: bool, board: Board) -> bool:
+def is_valid_hand(hand: Union[Hand, Tuple[int, int]], board: Board) -> bool:
     # unwrap
     if isinstance(hand, Hand):
         hand = hand.hand
+    side_num = 1 if board.side else -1
     board = board.board
 
     if board[hand[0]][hand[1]] != 0:
         return False
-    side_num = 1 if side else -1
     for slide in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
         next_point = (hand[0] + slide[0], hand[1] + slide[1])
         while _is_on_board(next_point):
