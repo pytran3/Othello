@@ -5,6 +5,8 @@ import numpy as np
 from othello.exceptions import OthelloRuntimeException
 from othello.model import Board, ScoreBoard, Hand
 
+_SLIDES = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
+
 
 def judge(board: Board) -> int:
     return board.board.sum()
@@ -20,7 +22,7 @@ def put_and_reverse(hand: Union[Hand, Tuple[int, int]], board: Board) -> Board:
     new_board = Board(board.board.copy(), not board.side)
     hand, side_num, board = _unwrap(hand, board)
     board = new_board.board
-    for slide in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+    for slide in _SLIDES:
         next_point = (hand[0] + slide[0], hand[1] + slide[1])
         while _is_on_board(next_point):
             if board[next_point[0]][next_point[1]] == 0:
@@ -54,7 +56,7 @@ def is_valid_hand(hand: Union[Hand, Tuple[int, int]], board: Board) -> bool:
 
     if board[hand[0]][hand[1]] != 0:
         return False
-    for slide in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+    for slide in _SLIDES:
         next_point = (hand[0] + slide[0], hand[1] + slide[1])
         while _is_on_board(next_point):
             if board[next_point[0]][next_point[1]] == 0:

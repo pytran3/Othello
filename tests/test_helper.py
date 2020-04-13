@@ -50,6 +50,11 @@ class TestIsValidHand(unittest.TestCase):
         actual = is_valid_hand((1, 1), board)
         self.assertFalse(actual)
 
+    def test_diagonal(self):
+        board = Board.init_board()
+        board.board[4][4] = -1
+        actual = is_valid_hand((5, 5), board)
+        self.assertTrue(actual)
 
 class TestPutAndReverse(unittest.TestCase):
     def test_reverse(self):
