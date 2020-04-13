@@ -1,0 +1,1 @@
+WIN_SCORE = 1e16

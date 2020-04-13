@@ -1,7 +1,8 @@
 from typing import Callable, Tuple, List, Union
 
-from othello.helper import extract_valid_hand, put_and_reverse
+from othello.helper import extract_valid_hand, put_and_reverse, judge
 from othello.model import Board, Hand
+from othello.parameters import WIN_SCORE
 
 
 class Searcher:
@@ -17,8 +18,10 @@ class Searcher:
             if score < best_score and not board.side:
                 best_hands, best_score = ([point] + hands), score
         if best_hands is None:
+            if pass_flag:
+                return [], (WIN_SCORE if judge(board) >= 0 else -WIN_SCORE)
             board = Board(board.board, not board.side)
-            return self.search_mini_max(board, calc_score, True)
+            return self.search_mini_max(board, calc_score, depth, True)
         return best_hands, best_score
 
     def _extract_valid_hand(self, board: Board):

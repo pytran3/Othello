@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 
 from othello.model import Board
+from othello.parameters import WIN_SCORE
 from othello.search import Searcher
 
 
@@ -35,3 +36,28 @@ class TestSearchMinMax(unittest.TestCase):
         actual_hands = [hand.hand for hand in actual_hands]
         self.assertEqual(actual_score, 1100)
         self.assertEqual(actual_hands, [(4, 5), (3, 5), (2, 5)])
+
+    def test_cant_put(self):
+        def score(_: Board):
+            return 0
+
+        board = Board.init_board()
+        board.board[3][3] = 1
+        actual_hands, actual_score = self.searcher.search_mini_max(board, score, 3)
+        actual_hands = [hand.hand for hand in actual_hands]
+        self.assertEqual(actual_score, WIN_SCORE)
+        self.assertIn(actual_hands, [[(4, 5)], [(5, 4)], [(5, 5)]])
+
+    def test_pass(self):
+        def score(_: Board):
+            return 0
+        board = Board(np.zeros((8, 8)))
+        board.board[0][0] = 1
+        board.board[0][1] = -1
+        board.board[7][0] = 1
+        board.board[7][1] = -1
+        actual_hands, actual_score = self.searcher.search_mini_max(board, score, 3)
+        actual_hands = [hand.hand for hand in actual_hands]
+        self.assertEqual(actual_score, WIN_SCORE)
+        self.assertIn(actual_hands, [[(0, 2), (7, 2)], [(7, 2), (0, 2)]])
+
