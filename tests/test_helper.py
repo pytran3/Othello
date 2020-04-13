@@ -22,25 +22,25 @@ class TestExtractHand(unittest.TestCase):
     def test_true_side(self):
         board = Board.init_board()
         actual = extract_valid_hand(board)
-        expected = [(2, 4), (4, 2), (3, 5), (5, 3)]
+        expected = [(2, 3), (3, 2), (4, 5), (5, 4)]
         self.assertEquals(set(expected), set(i.hand for i in actual))
 
     def test_false_side(self):
         board = Board.init_board(False)
         actual = extract_valid_hand(board)
-        expected = [(2, 3), (3, 2), (4, 5), (5, 4)]
+        expected = [(2, 4), (4, 2), (3, 5), (5, 3)]
         self.assertEquals(set(expected), set(i.hand for i in actual))
 
 
 class TestIsValidHand(unittest.TestCase):
     def test_valid(self):
         board = Board.init_board()
-        actual = is_valid_hand((3, 5), board)
+        actual = is_valid_hand((4, 5), board)
         self.assertTrue(actual)
 
     def test_invalid(self):
         board = Board.init_board(False)
-        actual = is_valid_hand((3, 5), board)
+        actual = is_valid_hand((4, 5), board)
         self.assertFalse(actual)
 
     def test_index_array_of_bound(self):
@@ -52,17 +52,17 @@ class TestIsValidHand(unittest.TestCase):
 
     def test_diagonal(self):
         board = Board.init_board()
-        board.board[4][4] = -1
+        board.board[3][3] = 1
         actual = is_valid_hand((5, 5), board)
         self.assertTrue(actual)
 
 class TestPutAndReverse(unittest.TestCase):
     def test_reverse(self):
         board = Board.init_board()
-        actual = put_and_reverse((3, 5), board)
+        actual = put_and_reverse((4, 5), board)
         expected = Board.init_board().board
-        expected[3][4] = 1
-        expected[3][5] = 1
+        expected[4][4] = 1
+        expected[4][5] = 1
         np.testing.assert_array_equal(expected, actual.board)
 
     def test_index_array_of_bound(self):

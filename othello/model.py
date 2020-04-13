@@ -9,7 +9,7 @@ class Board:
     def __init__(self, board: np.ndarray, side: bool = True):
         if board.shape != (8, 8):
             raise IllegalShapeException((8, 8), board.shape)
-        self.board = board
+        self.board = board.copy()
         self.side = side
 
     def __str__(self):
@@ -18,10 +18,10 @@ class Board:
     @staticmethod
     def init_board(side: bool = True):
         board = np.zeros((8, 8), dtype=int)
-        board[3][3] = 1
-        board[4][4] = 1
-        board[3][4] = -1
-        board[4][3] = -1
+        board[3][3] = -1
+        board[4][4] = -1
+        board[3][4] = 1
+        board[4][3] = 1
         return Board(board, side)
 
 
