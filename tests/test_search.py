@@ -68,15 +68,16 @@ class TestSearchAlphaBeta(unittest.TestCase):
         self.searcher = Searcher()
 
     def test_random(self):
-        _sb = np.random.normal(size=(8, 8))
+        for i in range(5):
+            _sb = np.random.normal(size=(8, 8))
 
-        def score(b: Board):
-            return float((b.board * _sb).sum())
+            def score(b: Board):
+                return float((b.board * _sb).sum())
 
-        board = Board.init_board()
-        actual_hands, actual_score = self.searcher.search_alpha_beta(board, score, 4)
-        expected_hands, expected_score = self.searcher.search_mini_max(board, score, 4)
-        actual_hands = [hand.hand for hand in actual_hands]
-        expected_hands = [hand.hand for hand in expected_hands]
-        self.assertEqual(expected_score, actual_score)
-        self.assertEqual(expected_hands, actual_hands)
+            board = Board.init_board()
+            actual_hands, actual_score = self.searcher.search_alpha_beta(board, score, 4)
+            expected_hands, expected_score = self.searcher.search_mini_max(board, score, 4)
+            actual_hands = [hand.hand for hand in actual_hands]
+            expected_hands = [hand.hand for hand in expected_hands]
+            self.assertEqual(expected_score, actual_score)
+            self.assertEqual(expected_hands, actual_hands)
