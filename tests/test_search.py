@@ -51,6 +51,7 @@ class TestSearchMinMax(unittest.TestCase):
     def test_pass(self):
         def score(_: Board):
             return 0
+
         board = Board(np.zeros((8, 8)))
         board.board[0][0] = 1
         board.board[0][1] = -1
@@ -61,3 +62,21 @@ class TestSearchMinMax(unittest.TestCase):
         self.assertEqual(actual_score, WIN_SCORE)
         self.assertIn(actual_hands, [[(0, 2), (7, 2)], [(7, 2), (0, 2)]])
 
+
+class TestSearchAlphaBeta(unittest.TestCase):
+    def setUp(self) -> None:
+        self.searcher = Searcher()
+
+    def test_random(self):
+        _sb = np.random.normal(size=(8, 8))
+
+        def score(b: Board):
+            return float((b.board * _sb).sum())
+
+        board = Board.init_board()
+        actual_hands, actual_score = self.searcher.search_alpha_beta(board, score, 4)
+        expected_hands, expected_score = self.searcher.search_mini_max(board, score, 4)
+        actual_hands = [hand.hand for hand in actual_hands]
+        expected_hands = [hand.hand for hand in expected_hands]
+        self.assertEqual(expected_score, actual_score)
+        self.assertEqual(expected_hands, actual_hands)

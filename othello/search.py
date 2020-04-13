@@ -13,9 +13,7 @@ class Searcher:
         for point in self._extract_valid_hand(board):
             new_board = self._put_and_reverse(point, board)
             hands, score = self.search_mini_max(new_board, calc_score, depth - 1)
-            if best_score < score and board.side:
-                best_hands, best_score = ([point] + hands), score
-            if score < best_score and not board.side:
+            if (best_score < score and board.side) or (score < best_score and not board.side):
                 best_hands, best_score = ([point] + hands), score
         if best_hands is None:
             if pass_flag:
@@ -23,6 +21,34 @@ class Searcher:
             board = Board(board.board, not board.side)
             return self.search_mini_max(board, calc_score, depth, True)
         return best_hands, best_score
+
+    def search_alpha_beta(
+            self,
+            board: Board,
+            calc_score: Callable[[Board], float],
+            depth: int = 8,
+            neighbor_best=None,
+            pass_flag=False
+    ) -> Tuple[List[Hand], float]:
+        if depth == 0:
+            return [], calc_score(board)
+        best_hands, best_score = None, (-1e18 if board.side else 1e18)
+        for point in self._extract_valid_hand(board):
+            new_board = self._put_and_reverse(point, board)
+            hands, score = self.search_mini_max(new_board, calc_score, depth - 1, neighbor_best)
+            if (best_score < score and board.side) or (score < best_score and not board.side):
+                best_hands, best_score = ([point] + hands), score
+                neighbor_best = score
+            if neighbor_best is not None:
+                if (neighbor_best < best_score and board.side) or (best_score < neighbor_best and not board.side):
+                    return ([point] + hands), score
+        if best_hands is None:
+            if pass_flag:
+                return [], (WIN_SCORE if judge(board) >= 0 else -WIN_SCORE)
+            board = Board(board.board, not board.side)
+            return self.search_mini_max(board, calc_score, depth, True)
+        return best_hands, best_score
+
 
     def _extract_valid_hand(self, board: Board):
         return extract_valid_hand(board)
