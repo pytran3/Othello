@@ -29,12 +29,11 @@ def put_and_reverse(hand: Union[Hand, Tuple[int, int]], board: Board) -> Board:
                 # 囲めない
                 next_point = (-1, -1)
                 break
-            if board[next_point[0]][next_point[1]] != side_num:
+            if board[next_point[0]][next_point[1]] == side_num:
                 # 裏返されるやつ終わり
-                next_point = (next_point[0] + slide[0], next_point[1] + slide[1])
                 break
             next_point = (next_point[0] + slide[0], next_point[1] + slide[1])
-        if _is_on_board(next_point) and board[next_point[0]][next_point[1]] == side_num:
+        if _is_on_board(next_point):
             while next_point != hand:
                 next_point = (next_point[0] - slide[0], next_point[1] - slide[1])
                 board[next_point[0]][next_point[1]] = side_num
@@ -63,14 +62,17 @@ def is_valid_hand(hand: Union[Hand, Tuple[int, int]], board: Board) -> bool:
                 # 囲めない
                 next_point = [-1, -1]
                 break
-            if board[next_point[0]][next_point[1]] != side_num:
+            if board[next_point[0]][next_point[1]] == side_num:
                 # 裏返されるやつ終わり
-                next_point = [i + j for i, j in zip(next_point, slide)]
                 break
             next_point = (next_point[0] + slide[0], next_point[1] + slide[1])
-        if _is_on_board(next_point) and board[next_point[0]][next_point[1]] == side_num:
+        if _is_on_board(next_point) and distance(hand, next_point) > 1:
             return True
     return False
+
+
+def distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
+    return max(abs(x - y) for x, y in zip(a, b))
 
 
 def _is_on_board(hand: Tuple[int, int]):

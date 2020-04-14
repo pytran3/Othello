@@ -56,6 +56,13 @@ class TestIsValidHand(unittest.TestCase):
         actual = is_valid_hand((5, 5), board)
         self.assertTrue(actual)
 
+    def test_jump(self):
+        board = Board.init_board()
+        board.board[4][5] = 1
+        actual = is_valid_hand((4, 6), board)
+        self.assertFalse(actual)
+
+
 class TestPutAndReverse(unittest.TestCase):
     def test_reverse(self):
         board = Board.init_board()
@@ -76,4 +83,14 @@ class TestPutAndReverse(unittest.TestCase):
         expected[0][1] = 1
         expected[0][2] = 1
         expected[0][3] = 1
+        np.testing.assert_array_equal(expected, actual.board)
+
+    def test_multi_size_reverse(self):
+        board = Board.init_board()
+        board.board[4][5] = -1
+        actual = put_and_reverse((4, 6), board)
+        expected = Board.init_board().board
+        expected[4][4] = 1
+        expected[4][5] = 1
+        expected[4][6] = 1
         np.testing.assert_array_equal(expected, actual.board)
