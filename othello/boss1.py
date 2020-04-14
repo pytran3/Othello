@@ -6,8 +6,9 @@ from othello.model import Board, Hand
 from othello.view import view_board
 
 
-def main():
+def main(sente=True):
     board = Board.init_board()
+    board.side = sente
     ai = MiniMaxAI(1)
     print(view_board(board))
     while True:
