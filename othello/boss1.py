@@ -9,7 +9,7 @@ from othello.view import view_board
 def main(sente=True):
     board = Board.init_board()
     board.side = sente
-    ai = MiniMaxAI(1)
+    ai = MiniMaxAI(4)
     print(view_board(board))
     while True:
         if not extract_valid_hand(board):
@@ -23,7 +23,7 @@ def main(sente=True):
             print("AI put: {}".format(hand))
         if (board.board == 0).sum() < 12:
             # 計算時間に余裕があるのでdeepに読む
-            ai.depth = 1
+            ai.depth = 8
         board = put_and_reverse(hand, board)
         print(view_board(board))
 
