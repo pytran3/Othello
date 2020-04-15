@@ -75,6 +75,15 @@ def distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
     return max(abs(x - y) for x, y in zip(a, b))
 
 
+def is_finished(board: Board):
+    if extract_valid_hand(board):
+        return False
+    board = Board(board.board, not board.side)
+    if extract_valid_hand(board):
+        return False
+    return True
+
+
 def _is_on_board(hand: Tuple[int, int]):
     return all([0 <= i < 8 for i in hand])
 

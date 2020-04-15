@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from othello.helper import judge, extract_valid_hand, is_valid_hand, put_and_reverse
+from othello.helper import judge, extract_valid_hand, is_valid_hand, put_and_reverse, is_finished
 from othello.model import Board
 
 
@@ -62,6 +62,25 @@ class TestIsValidHand(unittest.TestCase):
         actual = is_valid_hand((4, 6), board)
         self.assertFalse(actual)
 
+class TestIsFinished(unittest.TestCase):
+    def test_finish(self):
+        board = Board(np.zeros((8, 8)))
+        actual = is_finished(board)
+        self.assertTrue(actual)
+
+    def test_able_o(self):
+        board = Board(np.zeros((8, 8)))
+        board.board[0][0] = 1
+        board.board[0][1] = -1
+        actual = is_finished(board)
+        self.assertFalse(actual)
+
+    def test_able_x(self):
+        board = Board(np.zeros((8, 8)), False)
+        board.board[0][0] = 1
+        board.board[0][1] = -1
+        actual = is_finished(board)
+        self.assertFalse(actual)
 
 class TestPutAndReverse(unittest.TestCase):
     def test_reverse(self):
