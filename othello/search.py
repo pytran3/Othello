@@ -89,7 +89,7 @@ class MonteCarloSearcher(Searcher):
                 update(node)
                 node = node.parent
             update(node)  # root
-        best_node = max(root_children, key=lambda x: x.win_rate())
+        best_node = max(root_children, key=lambda x: x.count())
         return best_node.hand, best_node.win_rate()
 
     def _expand(self, node: Node) -> List[Node]:
