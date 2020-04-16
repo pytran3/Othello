@@ -52,11 +52,13 @@ def extract_valid_hand(board: Board) -> List[Hand]:
 
 def is_valid_hand(hand: Union[Hand, Tuple[int, int]], board: Board) -> bool:
     hand, side_num, board = _unwrap(hand, board)
+    hand_y = hand[0]
+    hand_x = hand[1]
 
-    if board[hand[0]][hand[1]] != 0:
+    if board[hand_y][hand_x] != 0:
         return False
-    for slide in _SLIDES:
-        next_point = (hand[0] + slide[0], hand[1] + slide[1])
+    for slide_y, slide_x in _SLIDES:
+        next_point = (hand_y + slide_y, hand_x + slide_x)
         while _is_on_board(next_point):
             if board[next_point[0]][next_point[1]] == 0:
                 # 囲めない
@@ -65,14 +67,15 @@ def is_valid_hand(hand: Union[Hand, Tuple[int, int]], board: Board) -> bool:
             if board[next_point[0]][next_point[1]] == side_num:
                 # 裏返されるやつ終わり
                 break
-            next_point = (next_point[0] + slide[0], next_point[1] + slide[1])
+            next_point = (next_point[0] + slide_y, next_point[1] + slide_x)
         if _is_on_board(next_point) and distance(hand, next_point) > 1:
             return True
     return False
 
 
 def distance(a: Tuple[int, int], b: Tuple[int, int]) -> int:
-    return max(abs(x - y) for x, y in zip(a, b))
+    # return max(abs(a[0] - b[0]), abs(a[1] - b[1]))  # 下の方が速い
+    return max(a[0] - b[0], b[0] - a[0], a[1] - b[1], b[1] - a[1])
 
 
 def is_finished(board: Board):
@@ -85,7 +88,7 @@ def is_finished(board: Board):
 
 
 def _is_on_board(hand: Tuple[int, int]):
-    return all([0 <= i < 8 for i in hand])
+    return 0 <= hand[0] < 8 and 0 <= hand[1] < 8
 
 
 def _unwrap(hand: Union[Hand, Tuple[int, int]], board: Board) -> Tuple[Tuple[int, int], int, np.ndarray]:
