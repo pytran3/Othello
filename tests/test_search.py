@@ -81,3 +81,12 @@ class TestSearchAlphaBeta(unittest.TestCase):
             expected_hands = [hand.hand for hand in expected_hands]
             self.assertEqual(expected_score, actual_score)
             self.assertEqual(expected_hands, actual_hands)
+
+
+class TestSearchMonteCarlo(unittest.TestCase):
+    def setUp(self) -> None:
+        self.searcher = Searcher()
+
+    def test(self):
+        board = Board.init_board()
+        self.searcher.search_monte_carlo(board, 20)

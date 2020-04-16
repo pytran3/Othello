@@ -1,12 +1,35 @@
 from typing import Callable, Tuple, List, Union
 
-from othello.helper import extract_valid_hand, put_and_reverse, judge
+import numpy as np
+
+from othello.helper import extract_valid_hand, put_and_reverse, judge, is_finished
 from othello.model import Board, Hand
 from othello.parameters import WIN_SCORE
 
 
+class Node:
+    def __init__(self, board: Board, parent=None, hand: Hand = None):
+        self.parent = parent
+        self.hand = hand
+        self.win_count = 0
+        self.lose_count = 0
+        self.even_count = 0
+        self.board = board
+        self.children = []
+
+    def win_rate(self):
+        return self.win_count / (self.win_count + self.lose_count)
+
+    def __hash__(self):
+        return id(self)
+
+    def __eq__(self, other):
+        return id(self) == id(other)
+
+
 class Searcher:
-    def search_mini_max(self, board: Board, calc_score: Callable[[Board], float], depth: int = 8, pass_flag=False) -> Tuple[List[Hand], float]:
+    def search_mini_max(self, board: Board, calc_score: Callable[[Board], float], depth: int = 8, pass_flag=False) -> \
+            Tuple[List[Hand], float]:
         if depth == 0:
             return [], calc_score(board)
         best_hands, best_score = None, (-1e18 if board.side else 1e18)
@@ -49,9 +72,58 @@ class Searcher:
             return self.search_mini_max(board, calc_score, depth, True)
         return best_hands, best_score
 
-
     def _extract_valid_hand(self, board: Board):
         return extract_valid_hand(board)
 
     def _put_and_reverse(self, hand: Union[Hand, Tuple[int, int]], board: Board) -> Board:
         return put_and_reverse(hand, board)
+
+    def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
+        root_node = Node(board)
+        root_children = self._expand(root_node)
+        leaf_nodes = root_children.copy()
+
+        while play_count:
+            play_count -= 1
+            node = self._select_node(leaf_nodes)
+            if node.win_count + node.lose_count > 2:
+                # expansion
+                new_leaf_nodes = self._expand(node)
+                del leaf_nodes[leaf_nodes.index(node)]
+                node = self._select_node(new_leaf_nodes)
+                leaf_nodes.extend(new_leaf_nodes)
+            result = self._play_out(node.board)
+
+            def update(x):
+                if result:
+                    x.win_count += 1
+                else:
+                    x.lose_count += 1
+
+            while node.parent is not None:
+                update(node)
+                node = node.parent
+            update(node)  # root
+        best_node = max(root_children, key=lambda x: x.win_rate())
+        return best_node.hand, best_node.win_rate()
+
+    def _expand(self, node: Node) -> List[Node]:
+        ret = [
+            Node(self._put_and_reverse(hand, node.board), node, hand=hand)
+            for hand in self._extract_valid_hand(node.board)
+        ]
+        node.children = ret
+        return ret
+
+    def _play_out(self, board: Board) -> bool:
+        while not is_finished(board):
+            valid_hands = self._extract_valid_hand(board)
+            if len(valid_hands) == 0:
+                board = Board(board.board, not board.side)
+                continue
+            hand = np.random.choice(valid_hands)
+            board = put_and_reverse(hand, board)
+        return judge(board) > 0  # 引き分けたら負けだろ
+
+    def _select_node(self, leaf_nodes: List[Node]) -> Node:
+        return np.random.choice(leaf_nodes)
