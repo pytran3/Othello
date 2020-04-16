@@ -46,20 +46,15 @@ class Node:
     Node for tree search
 
     """
+
     def __init__(self, board: Board, parent=None, hand: Hand = None):
         self.parent = parent
         self.hand = hand
-        self.win_count = 0
-        self.lose_count = 0
-        self.even_count = 0
+        self.w = 0
+        self.n = 0
         self.board = board
         self.children = []
-
-    def win_rate(self):
-        return self.win_count / self.count() if self.count() else 0
-
-    def count(self):
-        return self.win_count + self.lose_count
+        self.value = 0
 
     def __hash__(self):
         return id(self)

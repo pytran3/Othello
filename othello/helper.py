@@ -12,6 +12,16 @@ def judge(board: Board) -> int:
     return board.board.sum()
 
 
+def judge_simple(board: Board) -> int:
+    ret = judge(board)
+    if ret > 0:
+        return 1
+    elif ret < 0:
+        return -1
+    else:
+        return 0
+
+
 def simple_score(board: Board, score: ScoreBoard) -> float:
     return (board.board * score.board).sum()
 

@@ -75,8 +75,8 @@ class TestSearchAlphaBeta(unittest.TestCase):
                 return float((b.board * _sb).sum())
 
             board = Board.init_board()
-            actual_hands, actual_score = self.searcher.search_alpha_beta(board, score, 4)
-            expected_hands, expected_score = self.searcher.search_mini_max(board, score, 4)
+            actual_hands, actual_score = self.searcher.search_mini_max(board, score, 6)
+            expected_hands, expected_score = self.searcher.search_alpha_beta(board, score, 6)
             actual_hands = [hand.hand for hand in actual_hands]
             expected_hands = [hand.hand for hand in expected_hands]
             self.assertEqual(expected_score, actual_score)
@@ -89,13 +89,13 @@ class TestSearchMonteCarlo(unittest.TestCase):
 
     def test(self):
         board = Board.init_board()
-        self.searcher.search_monte_carlo(board, 100)
+        self.searcher.search_monte_carlo(board, 20)
 
     def test_select_node(self):
         nodes = [Node(Board.init_board()) for _ in range(4)]
         for i in range(3):
-            nodes[i].win_count = 2
-            nodes[i].lose_count = 1
+            nodes[i].w = 2
+            nodes[i].n = 4
         self.searcher.c = 1.0
         actual = self.searcher._select_node(nodes, 9)
         expected = nodes[-1]
@@ -104,9 +104,10 @@ class TestSearchMonteCarlo(unittest.TestCase):
     def test_select_node_exploit(self):
         nodes = [Node(Board.init_board()) for _ in range(4)]
         for i in range(3):
-            nodes[i].win_count = 2
-            nodes[i].lose_count = 1
-        nodes[-1].win_count = 1000
+            nodes[i].w = 2
+            nodes[i].n = 4
+        nodes[-1].w = 1000
+        nodes[-1].n = 1000
         self.searcher.c = 0.0
         actual = self.searcher._select_node(nodes, 1009)
         expected = nodes[-1]
@@ -115,9 +116,10 @@ class TestSearchMonteCarlo(unittest.TestCase):
     def test_select_node_explore(self):
         nodes = [Node(Board.init_board()) for _ in range(4)]
         for i in range(3):
-            nodes[i].win_count = 2
-            nodes[i].lose_count = 1
-        nodes[-1].win_count = 1000
+            nodes[i].w = 2
+            nodes[i].n = 4
+        nodes[-1].w = 3
+        nodes[-1].n = 1000
         self.searcher.c = 1.0
         actual = self.searcher._select_node(nodes, 1009)
         expected = nodes[-1]
