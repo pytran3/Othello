@@ -58,6 +58,8 @@ class Searcher:
     def _put_and_reverse(self, hand: Union[Hand, Tuple[int, int]], board: Board) -> Board:
         return put_and_reverse(hand, board)
 
+
+class MonteCarloSearcher(Searcher):
     def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
         root_node = Node(board)
         root_children = self._expand(root_node)

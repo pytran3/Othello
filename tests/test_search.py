@@ -4,7 +4,7 @@ import numpy as np
 
 from othello.model import Board
 from othello.parameters import WIN_SCORE
-from othello.search import Searcher
+from othello.search import Searcher, MonteCarloSearcher
 
 
 class TestSearchMinMax(unittest.TestCase):
@@ -85,7 +85,7 @@ class TestSearchAlphaBeta(unittest.TestCase):
 
 class TestSearchMonteCarlo(unittest.TestCase):
     def setUp(self) -> None:
-        self.searcher = Searcher()
+        self.searcher = MonteCarloSearcher()
 
     def test(self):
         board = Board.init_board()
