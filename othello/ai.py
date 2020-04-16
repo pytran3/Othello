@@ -3,7 +3,7 @@ from abc import abstractmethod, ABC
 import numpy as np
 
 from othello.model import Board, Hand
-from othello.search import Searcher
+from othello.search import Searcher, MonteCarloSearcher
 
 
 class AI(ABC):
@@ -37,3 +37,21 @@ class MiniMaxAI(AI):
                 [30, -12, 0, -1, -1, 0, -12, 30],
             ]
         )
+
+
+class MonteCarloAI(MiniMaxAI):
+    def put(self, board: Board) -> Hand:
+        best_hand, best_score = self.searcher.search_monte_carlo(
+            board,
+            self.play_count
+        )
+        print("Evaluation: {}".format(best_score))
+        return best_hand
+
+    def put_exhaustive_search(self, board: Board) -> Hand:
+        return super().put(board)
+
+    def __init__(self, play_count=30, c=1.0):
+        super().__init__(100)
+        self.searcher = MonteCarloSearcher(c)
+        self.play_count = play_count
