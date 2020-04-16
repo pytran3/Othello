@@ -1,3 +1,4 @@
+import math
 from typing import Callable, Tuple, List, Union
 
 import numpy as np
@@ -60,19 +61,21 @@ class Searcher:
 
 
 class MonteCarloSearcher(Searcher):
+    def __init__(self, c=1.0):
+        self.c = c
+
     def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
         root_node = Node(board)
         root_children = self._expand(root_node)
         leaf_nodes = root_children.copy()
 
-        while play_count:
-            play_count -= 1
-            node = self._select_node(leaf_nodes)
+        for play_index in range(play_count):
+            node = self._select_node(leaf_nodes, play_index + 1)
             if node.win_count + node.lose_count > 2:
                 # expansion
                 new_leaf_nodes = self._expand(node)
                 del leaf_nodes[leaf_nodes.index(node)]
-                node = self._select_node(new_leaf_nodes)
+                node = self._select_node(new_leaf_nodes, play_index + 1)
                 leaf_nodes.extend(new_leaf_nodes)
             result = self._play_out(node.board)
 
@@ -107,5 +110,13 @@ class MonteCarloSearcher(Searcher):
             board = put_and_reverse(hand, board)
         return judge(board) > 0  # 引き分けたら負けだろ
 
-    def _select_node(self, leaf_nodes: List[Node]) -> Node:
-        return np.random.choice(leaf_nodes)
+    def _select_node(self, leaf_nodes: List[Node], n: int) -> Node:
+        eval_list = self._eval_nodes(leaf_nodes, n)
+        return max(eval_list, key=lambda x: x[0])[1]
+
+    def _eval_nodes(self, nodes: List[Node], n: int):
+        def ucb(node: Node):
+            return node.win_rate() + self.c * math.sqrt(2 * math.log(n) / (node.count() + eps))
+
+        eps = 1e-8
+        return [(ucb(x), x) for x in nodes]

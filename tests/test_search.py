@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from othello.model import Board
+from othello.model import Board, Node
 from othello.parameters import WIN_SCORE
 from othello.search import Searcher, MonteCarloSearcher
 
@@ -89,4 +89,36 @@ class TestSearchMonteCarlo(unittest.TestCase):
 
     def test(self):
         board = Board.init_board()
-        self.searcher.search_monte_carlo(board, 20)
+        self.searcher.search_monte_carlo(board, 100)
+
+    def test_select_node(self):
+        nodes = [Node(Board.init_board()) for _ in range(4)]
+        for i in range(3):
+            nodes[i].win_count = 2
+            nodes[i].lose_count = 1
+        self.searcher.c = 1.0
+        actual = self.searcher._select_node(nodes, 9)
+        expected = nodes[-1]
+        self.assertEqual(actual, expected)
+
+    def test_select_node_exploit(self):
+        nodes = [Node(Board.init_board()) for _ in range(4)]
+        for i in range(3):
+            nodes[i].win_count = 2
+            nodes[i].lose_count = 1
+        nodes[-1].win_count = 1000
+        self.searcher.c = 0.0
+        actual = self.searcher._select_node(nodes, 1009)
+        expected = nodes[-1]
+        self.assertEqual(actual, expected)
+
+    def test_select_node_explore(self):
+        nodes = [Node(Board.init_board()) for _ in range(4)]
+        for i in range(3):
+            nodes[i].win_count = 2
+            nodes[i].lose_count = 1
+        nodes[-1].win_count = 1000
+        self.searcher.c = 1.0
+        actual = self.searcher._select_node(nodes, 1009)
+        expected = nodes[-1]
+        self.assertNotEqual(actual, expected)

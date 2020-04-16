@@ -56,7 +56,10 @@ class Node:
         self.children = []
 
     def win_rate(self):
-        return self.win_count / (self.win_count + self.lose_count)
+        return self.win_count / self.count() if self.count() else 0
+
+    def count(self):
+        return self.win_count + self.lose_count
 
     def __hash__(self):
         return id(self)
