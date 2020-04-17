@@ -94,11 +94,11 @@ class TestSearchAlphaBeta(unittest.TestCase):
                 return float((b.board * _sb).sum())
 
             board = Board.init_board()
-            actual_hands, actual_score = self.searcher.search_mini_max(board, score, 4)
-            expected_hands, expected_score = self.searcher.search_alpha_beta(board, score, 4)
+            expected_hands, expected_score = self.searcher.search_mini_max(board, score, 4)
+            actual_hands, actual_score = self.searcher.search_alpha_beta(board, score, 4)
             actual_hands = [hand.hand for hand in actual_hands]
             expected_hands = [hand.hand for hand in expected_hands]
-            self.assertEqual(expected_score, -actual_score)
+            self.assertEqual(expected_score, actual_score)
             self.assertEqual(expected_hands, actual_hands)
 
 
