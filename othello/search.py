@@ -9,22 +9,22 @@ from othello.parameters import WIN_SCORE
 
 
 class Searcher:
-    def search_mini_max(self, board: Board, calc_score: Callable[[Board], float], depth: int = 8, pass_flag=False) -> \
+    def search_mini_max(self, board: Board, calc_score: Callable[[Board], float], depth: int = 8) -> \
             Tuple[List[Hand], float]:
+        if is_finished(board):
+            return [], WIN_SCORE * judge_simple(board)
         if depth == 0:
-            return [], calc_score(board)
-        best_hands, best_score = None, (-1e18 if board.side else 1e18)
+            return [], -calc_score(board)
+        best_hands, best_score = None, -1e18
         for point in self._extract_valid_hand(board):
-            new_board = self._put_and_reverse(point, board)
+            if point.is_pass_hand:
+                new_board = Board(board.board, not board.side)
+            else:
+                new_board = self._put_and_reverse(point, board)
             hands, score = self.search_mini_max(new_board, calc_score, depth - 1)
-            if (best_score < score and board.side) or (score < best_score and not board.side):
+            if best_score < score:
                 best_hands, best_score = ([point] + hands), score
-        if best_hands is None:
-            if pass_flag:
-                return [], (WIN_SCORE if judge(board) >= 0 else -WIN_SCORE)
-            board = Board(board.board, not board.side)
-            return self.search_mini_max(board, calc_score, depth, True)
-        return best_hands, best_score
+        return best_hands, -best_score
 
     def search_alpha_beta(
             self,
@@ -54,7 +54,11 @@ class Searcher:
         return best_hands, best_score
 
     def _extract_valid_hand(self, board: Board):
-        return extract_valid_hand(board)
+        ret = extract_valid_hand(board)
+        if ret:
+            return ret
+        else:
+            return [Hand.pass_hand()]
 
     def _put_and_reverse(self, hand: Union[Hand, Tuple[int, int]], board: Board) -> Board:
         return put_and_reverse(hand, board)
@@ -98,7 +102,7 @@ class MonteCarloSearcher(Searcher):
     def _play_out(self, board: Board) -> int:
         while not is_finished(board):
             valid_hands = self._extract_valid_hand(board)
-            if len(valid_hands) == 0:
+            if valid_hands[0].is_pass_hand:
                 board = Board(board.board, not board.side)
                 continue
             hand = np.random.choice(valid_hands)

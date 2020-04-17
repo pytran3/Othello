@@ -31,14 +31,19 @@ class ScoreBoard:
 
 
 class Hand:
-    def __init__(self, hand: Tuple[int, int], board: Board):
+    def __init__(self, hand: Tuple[int, int], board: Board, is_pass_hand=False):
         if (not 0 <= hand[0] < 8) or (not 0 <= hand[1] < 8):
             raise IllegalIndexException((8, 8), hand)
         self.hand = hand
         self.board = board
+        self.is_pass_hand = is_pass_hand
 
     def __str__(self):
         return "Hand ({})".format(self.hand)
+
+    @staticmethod
+    def pass_hand():
+        return Hand((0, 0), Board.init_board(), True)
 
 
 class Node:
