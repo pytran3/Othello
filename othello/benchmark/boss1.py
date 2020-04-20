@@ -8,18 +8,20 @@ from othello.view import view_board
 
 def main(sente=True):
     board = Board.init_board()
-    board.side = sente
-    ai = MiniMaxAI(4)
+    ai = MiniMaxAI(5)
     print(view_board(board))
+    hands = []
     while True:
         if not extract_valid_hand(board):
             board.side ^= True
+            hands.append(Hand.pass_hand())
         if not extract_valid_hand(board):
             break
-        if board.side:
+        if board.side ^ sente:
             hand = input_hand(board)
         else:
-            hand = ai.put(board)
+            hand = ai.put(board, hands)
+            hands.append(hand)
             print("AI put: {}".format(hand))
         if (board.board == 0).sum() < 12:
             # 計算時間に余裕があるのでdeepに読む
