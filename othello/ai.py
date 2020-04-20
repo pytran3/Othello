@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 
+from othello.helper import extract_valid_hand
 from othello.model import Board, Hand
 from othello.search import Searcher, MonteCarloSearcher
 
@@ -15,11 +16,8 @@ class AI(ABC):
 
 class RandomAI(AI):
     def put(self, board: Board, hands: List[Hand]) -> Hand:
-        hands = self.searcher._extract_valid_hand(board)
+        hands = extract_valid_hand(board)
         return np.random.choice(hands)
-
-    def __init__(self):
-        self.searcher = Searcher()
 
 
 class MiniMaxAI(AI):
