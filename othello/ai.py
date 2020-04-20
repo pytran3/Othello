@@ -27,7 +27,7 @@ class MiniMaxAI(AI):
         depth = self.depth if 60 - len(hands) > self.exhaust_threshold else 100
         best_hands, best_score = self.searcher.search_alpha_beta(
             board,
-            lambda b: float((b.board * self.score_board).sum()),
+            lambda b: float((b.board * self.score_board).sum()) * (1 if b.side else -1),
             depth,
         )
         return best_hands[0]
