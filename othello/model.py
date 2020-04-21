@@ -11,6 +11,7 @@ class Board:
             raise IllegalShapeException((8, 8), board.shape)
         self.board = board.copy()
         self.side = side
+        self.is_finished = None
 
     def __str__(self):
         return "Board (side={}, {})".format(self.side, self.board)
@@ -59,7 +60,6 @@ class Node:
         self.n = 0
         self.board = board
         self.children = []
-        self.value = 0
 
     def __hash__(self):
         return id(self)

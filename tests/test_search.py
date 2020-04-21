@@ -116,7 +116,7 @@ class TestSearchMonteCarlo(unittest.TestCase):
             nodes[i].w = 2
             nodes[i].n = 4
         self.searcher.c = 1.0
-        actual = self.searcher._select_node(nodes, 9)
+        actual = self.searcher._select_node(nodes)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
@@ -128,7 +128,7 @@ class TestSearchMonteCarlo(unittest.TestCase):
         nodes[-1].w = 1000
         nodes[-1].n = 1000
         self.searcher.c = 0.0
-        actual = self.searcher._select_node(nodes, 1009)
+        actual = self.searcher._select_node(nodes)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
@@ -140,6 +140,6 @@ class TestSearchMonteCarlo(unittest.TestCase):
         nodes[-1].w = 3
         nodes[-1].n = 1000
         self.searcher.c = 1.0
-        actual = self.searcher._select_node(nodes, 1009)
+        actual = self.searcher._select_node(nodes)
         expected = nodes[-1]
         self.assertNotEqual(actual, expected)

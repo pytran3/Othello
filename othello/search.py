@@ -68,25 +68,29 @@ class MonteCarloSearcher(Searcher):
 
     def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
         root_node = Node(board)
-        root_children = self._expand(root_node)
-        [self._expand(child) for child in root_children]
-        leaf_nodes = root_children.copy()
+        root_node.children = self._expand(root_node)
 
         for play_index in range(play_count):
-            node = self._select_node(leaf_nodes, play_index + 1)
-            if len(node.children) == 0:
-                node.value = judge_simple(node.board)
-            elif node.n > 2:
-                # expansion
-                new_leaf_nodes = self._expand(node)
-                del leaf_nodes[leaf_nodes.index(node)]
-                node = self._select_node(new_leaf_nodes, play_index + 1)
-                leaf_nodes.extend(new_leaf_nodes)
-                node.w += self._play_out(node.board)
+            node = root_node
+            while node.children:
+                node = self._select_node(node.children)
+
+            if node.board.is_finished is None:
+                node.board.is_finished = is_finished(node.board)
+            if node.board.is_finished:
+                value = judge_simple(node.board)
             else:
-                node.w += self._play_out(node.board)
-            self._backward(root_node)
-        best_node = max(root_children, key=lambda x: x.n)
+                if node.n > 2:
+                    # expansion
+                    node.children = self._expand(node)
+                    node = self._select_node(node.children)
+                value = self._play_out(node.board)
+
+            node.w += value
+            while node.parent:
+                node = node.parent
+                node.w += value
+        best_node = max(root_node.children, key=lambda x: x.n)
         return best_node.hand, best_node.w
 
     def _expand(self, node: Node) -> List[Node]:
@@ -107,26 +111,13 @@ class MonteCarloSearcher(Searcher):
             board = put_and_reverse(hand, board)
         return judge_simple(board)
 
-    def _select_node(self, leaf_nodes: List[Node], n: int) -> Node:
-        eval_list = self._eval_nodes(leaf_nodes, n)
+    def _select_node(self, leaf_nodes: List[Node]) -> Node:
+        eval_list = self._eval_nodes(leaf_nodes)
         return max(eval_list, key=lambda x: x[0])[1]
 
-    def _eval_nodes(self, nodes: List[Node], n: int):
+    def _eval_nodes(self, nodes: List[Node]):
         def ucb(node: Node):
             return node.w + self.c * math.sqrt(2 * math.log(n) / (node.n + 1e-8))
 
-        return [(ucb(x), x) for x in nodes]
-
-    def _backward(self, root: Node) -> float:
-        if len(root.children):
-            value = root.value
-            root.value = 0
-            root.w += value
-            root.n += 1
-            return value
-        n = sum([x.n for x in root.children])
-        best_node = max([x for x in self._eval_nodes(root.children, n)], key=lambda x: x[0])[1]
-        value = -self._backward(best_node)
-        root.w += value
-        root.n += 1
-        return value
+        n = sum([node.n for node in nodes])
+        return [(ucb(x) if x.n else 1e18, x) for x in nodes]
