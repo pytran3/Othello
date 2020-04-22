@@ -64,9 +64,35 @@ class Searcher:
         return put_and_reverse(hand, board)
 
 
+def play_out(board: Board) -> float:
+    while not is_finished(board):
+        valid_hands = extract_valid_hand(board)
+        if len(valid_hands) == 0:
+            board = Board(board.board, not board.side)
+            continue
+        hand = np.random.choice(valid_hands)
+        board = put_and_reverse(hand, board)
+    return judge_simple(board)
+
+
+def select_node_ucb(leaf_nodes: List[Node], c: float = 1.0) -> Node:
+    eval_list = eval_nodes_ucb(leaf_nodes, c)
+    return max(eval_list, key=lambda x: x[0])[1]
+
+
+def eval_nodes_ucb(nodes: List[Node], c: float):
+    def ucb(node: Node):
+        return node.w + c * math.sqrt(2 * math.log(n) / (node.n + 1e-8))
+
+    n = sum([node.n for node in nodes])
+    return [(ucb(x) if x.n else 1e18, x) for x in nodes]
+
+
 class MonteCarloSearcher(Searcher):
-    def __init__(self, c=1.0):
-        self.c = c
+    def __init__(self, expansion_threshold=3, evaluate=play_out, select_node=select_node_ucb):
+        self.expansion_threshold = expansion_threshold
+        self.evaluate = evaluate
+        self.select_node = select_node
 
     def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
         root_node = Node(board)
@@ -75,18 +101,18 @@ class MonteCarloSearcher(Searcher):
         for play_index in range(play_count):
             node = root_node
             while node.children:
-                node = self._select_node(node.children)
+                node = self.select_node(node.children)
 
             if node.board.is_finished is None:
                 node.board.is_finished = is_finished(node.board)
             if node.board.is_finished:
                 value = judge_simple(node.board)
             else:
-                if node.n > 2:
+                if node.n >= self.expansion_threshold:
                     # expansion
                     node.children = self._expand(node)
-                    node = self._select_node(node.children)
-                value = self._play_out(node.board)
+                    node = self.select_node(node.children)
+                value = self.evaluate(node.board)
 
             node.w += value
             while node.parent:
@@ -102,24 +128,3 @@ class MonteCarloSearcher(Searcher):
         ]
         node.children = ret
         return ret
-
-    def _play_out(self, board: Board) -> int:
-        while not is_finished(board):
-            valid_hands = self._extract_valid_hand(board)
-            if valid_hands[0].is_pass_hand:
-                board = Board(board.board, not board.side)
-                continue
-            hand = np.random.choice(valid_hands)
-            board = put_and_reverse(hand, board)
-        return judge_simple(board)
-
-    def _select_node(self, leaf_nodes: List[Node]) -> Node:
-        eval_list = self._eval_nodes(leaf_nodes)
-        return max(eval_list, key=lambda x: x[0])[1]
-
-    def _eval_nodes(self, nodes: List[Node]):
-        def ucb(node: Node):
-            return node.w + self.c * math.sqrt(2 * math.log(n) / (node.n + 1e-8))
-
-        n = sum([node.n for node in nodes])
-        return [(ucb(x) if x.n else 1e18, x) for x in nodes]

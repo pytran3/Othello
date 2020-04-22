@@ -4,7 +4,7 @@ import numpy as np
 
 from othello.model import Board, Node
 from othello.parameters import WIN_SCORE
-from othello.search import Searcher, MonteCarloSearcher
+from othello.search import Searcher, MonteCarloSearcher, select_node_ucb
 
 
 class TestWithReverse(unittest.TestCase):
@@ -159,8 +159,7 @@ class TestSearchMonteCarlo(TestWithReverse):
         for i in range(3):
             nodes[i].w = 2
             nodes[i].n = 4
-        self.searcher.c = 1.0
-        actual = self.searcher._select_node(nodes)
+        actual = select_node_ucb(nodes, 1.0)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
@@ -171,8 +170,7 @@ class TestSearchMonteCarlo(TestWithReverse):
             nodes[i].n = 4
         nodes[-1].w = 1000
         nodes[-1].n = 1000
-        self.searcher.c = 0.0
-        actual = self.searcher._select_node(nodes)
+        actual = select_node_ucb(nodes, 0.0)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
@@ -183,7 +181,6 @@ class TestSearchMonteCarlo(TestWithReverse):
             nodes[i].n = 4
         nodes[-1].w = 3
         nodes[-1].n = 1000
-        self.searcher.c = 1.0
-        actual = self.searcher._select_node(nodes)
+        actual = select_node_ucb(nodes, 1.0)
         expected = nodes[-1]
         self.assertNotEqual(actual, expected)
