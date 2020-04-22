@@ -75,8 +75,8 @@ def play_out(board: Board) -> float:
     return judge_simple(board)
 
 
-def select_node_ucb(leaf_nodes: List[Node], c: float = 1.0) -> Node:
-    eval_list = eval_nodes_ucb(leaf_nodes, c)
+def select_node_ucb(node: Node, c: float = 1.0) -> Node:
+    eval_list = eval_nodes_ucb(node.children, c)
     return max(eval_list, key=lambda x: x[0])[1]
 
 
@@ -101,7 +101,7 @@ class MonteCarloSearcher(Searcher):
         for play_index in range(play_count):
             node = root_node
             while node.children:
-                node = self.select_node(node.children)
+                node = self.select_node(node)
 
             if node.board.is_finished is None:
                 node.board.is_finished = is_finished(node.board)
@@ -111,7 +111,7 @@ class MonteCarloSearcher(Searcher):
                 if node.n >= self.expansion_threshold:
                     # expansion
                     node.children = self._expand(node)
-                    node = self.select_node(node.children)
+                    node = self.select_node(node)
                 value = self.evaluate(node.board)
 
             node.w += value

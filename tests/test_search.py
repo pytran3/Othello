@@ -155,32 +155,38 @@ class TestSearchMonteCarlo(TestWithReverse):
         self._test(board, test)
 
     def test_select_node(self):
+        node = Node(Board.init_board())
         nodes = [Node(Board.init_board()) for _ in range(4)]
+        node.children = nodes
         for i in range(3):
             nodes[i].w = 2
             nodes[i].n = 4
-        actual = select_node_ucb(nodes, 1.0)
+        actual = select_node_ucb(node, 1.0)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
     def test_select_node_exploit(self):
+        node = Node(Board.init_board())
         nodes = [Node(Board.init_board()) for _ in range(4)]
+        node.children = nodes
         for i in range(3):
             nodes[i].w = 2
             nodes[i].n = 4
         nodes[-1].w = 1000
         nodes[-1].n = 1000
-        actual = select_node_ucb(nodes, 0.0)
+        actual = select_node_ucb(node, 0.0)
         expected = nodes[-1]
         self.assertEqual(actual, expected)
 
     def test_select_node_explore(self):
+        node = Node(Board.init_board())
         nodes = [Node(Board.init_board()) for _ in range(4)]
+        node.children = nodes
         for i in range(3):
             nodes[i].w = 2
             nodes[i].n = 4
         nodes[-1].w = 3
         nodes[-1].n = 1000
-        actual = select_node_ucb(nodes, 1.0)
+        actual = select_node_ucb(node, 1.0)
         expected = nodes[-1]
         self.assertNotEqual(actual, expected)
