@@ -34,9 +34,9 @@ class Network:
         x = torch.squeeze(x, -1)
         x = torch.squeeze(x, -1)
         p = self.p_clf(x)
-        p = F.softmax(p)
+        p = F.softmax(p, dim=-1)
         v = self.v_clf(x)
-        v = F.tanh(v)
+        v = torch.tanh(v)
         return p, v
 
 

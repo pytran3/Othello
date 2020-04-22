@@ -1,10 +1,10 @@
 from abc import abstractmethod, ABC
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
 from othello.helper import extract_valid_hand
-from othello.model import Board, Hand
+from othello.model import Board, Hand, Node
 from othello.search import Searcher, MonteCarloSearcher
 
 
@@ -69,3 +69,46 @@ class MonteCarloAI(MiniMaxAI):
         self.searcher = MonteCarloSearcher(c)
         self.play_count = play_count
         self.exhaust_threshold = exhaust_threshold
+
+
+class AlphaZero(AI):
+    def put(self, board: Board, hands: List[Hand]) -> Hand:
+        best_hand, best_score = self.searcher.search_monte_carlo(
+            board,
+            self.play_count
+        )
+        return best_hand
+
+    def _predict(self, board: Board):
+        board = np.array([[board.board == 1, board.board == -1]])
+        p, v = self.network.predict(board)
+        return p[0, :], v
+
+    def _calc_valid_hand_p(self, p: np.ndarray, board: Board) -> Tuple[np.ndarray, List[Hand]]:
+        p = p[:-1].reshape((8, 8))
+        hands = extract_valid_hand(board)
+        valid_p = np.array([p[hand.hand[0]][hand.hand[1]] for hand in hands])
+        result = valid_p / sum(valid_p + 1e-18)
+        return result, hands
+
+    def _evaluate_board(self, board: Board):
+        p, v = self._predict(board)
+        p, hands = self._calc_valid_hand_p(p, board)
+        return p, hands, v
+
+    def __init__(self, network, exhaust_threshold=8, play_count=30):
+        super().__init__()
+        self.network = network
+        self.play_count = play_count
+        self.exhaust_threshold = exhaust_threshold
+
+        def select_node(node: Node):
+            p, hands, _ = self._evaluate_board(node.board)
+            hand = np.random.choice(hands, p=p)
+            return [node for node in node.children if node.hand.hand == hand.hand][0]
+
+        def evaluete(board: Board):
+            _, _, v = self._evaluate_board(board)
+            return v
+
+        self.searcher = MonteCarloSearcher(evaluate=evaluete, select_node=select_node)
