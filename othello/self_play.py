@@ -11,12 +11,11 @@ from othello.network import Network
 MODEL_PATH = 'model/latest.pth'
 
 
-def play():
+def play(network, device="cpu"):
     board = Board.init_board()
-    network = Network()
-    network.load_state_dict(torch.load(MODEL_PATH))
-    ai1 = AlphaZero(network, exhaust_threshold=8, play_count=20, history=True)
-    ai2 = AlphaZero(network, exhaust_threshold=8, play_count=20, history=True)
+
+    ai1 = AlphaZero(network, play_count=100, history=True)
+    ai2 = AlphaZero(network, play_count=100, history=True)
     hands = []
     while True:
         if not extract_valid_hand(board):
@@ -41,10 +40,17 @@ def play():
 
 
 def main(play_count):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    network = Network(device)
+    network.load_state_dict(torch.load(MODEL_PATH))
+    network.eval()
+    network.to(device)
+    for resnet in network.resnet:
+        resnet.to(device)
     history = []
     for i in range(play_count):
         print(i)
-        tmp = play()
+        tmp = play(network)
         history.extend(tmp)
     now = datetime.now()
     path = "data/{:4}{:02}{:02}{:02}{:02}{:02}.history".format(now.year, now.month, now.day, now.hour, now.minute,
@@ -54,4 +60,4 @@ def main(play_count):
 
 
 if __name__ == '__main__':
-    main(2)
+    main(5)
