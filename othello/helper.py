@@ -97,6 +97,17 @@ def is_finished(board: Board):
     return True
 
 
+def boltzmann(p: np.ndarray, temperature: float = 0):
+    if temperature == 0:
+        action = np.argmax(p)
+        scores = np.zeros(len(p))
+        scores[action] = 1
+    else:
+        p = p ** (1 / temperature)
+        scores = p / p.sum()
+    return scores
+
+
 def _is_on_board(hand: Tuple[int, int]):
     return 0 <= hand[0] < 8 and 0 <= hand[1] < 8
 

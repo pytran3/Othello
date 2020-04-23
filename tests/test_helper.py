@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from othello.helper import judge, extract_valid_hand, is_valid_hand, put_and_reverse, is_finished
+from othello.helper import judge, extract_valid_hand, is_valid_hand, put_and_reverse, is_finished, boltzmann
 from othello.model import Board
 
 
@@ -62,6 +62,7 @@ class TestIsValidHand(unittest.TestCase):
         actual = is_valid_hand((4, 6), board)
         self.assertFalse(actual)
 
+
 class TestIsFinished(unittest.TestCase):
     def test_finish(self):
         board = Board(np.zeros((8, 8)))
@@ -81,6 +82,7 @@ class TestIsFinished(unittest.TestCase):
         board.board[0][1] = -1
         actual = is_finished(board)
         self.assertFalse(actual)
+
 
 class TestPutAndReverse(unittest.TestCase):
     def test_reverse(self):
@@ -113,3 +115,17 @@ class TestPutAndReverse(unittest.TestCase):
         expected[4][5] = 1
         expected[4][6] = 1
         np.testing.assert_array_equal(expected, actual.board)
+
+
+class TestBoltzmann(unittest.TestCase):
+    def test_0_temperature(self):
+        p = np.array([1, 2, 3])
+        actual = boltzmann(p, 0)
+        expected = np.array([0, 0, 1])
+        np.testing.assert_equal(actual, expected)
+
+    def test_1_temperature(self):
+        p = np.array([1, 2, 3])
+        actual = boltzmann(p, 1)
+        expected = np.array([1/6, 2/6, 3/6])
+        np.testing.assert_equal(actual, expected)

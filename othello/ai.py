@@ -1,10 +1,12 @@
+import math
 from abc import abstractmethod, ABC
 from typing import List, Tuple
 
 import numpy as np
 
-from othello.helper import extract_valid_hand
+from othello.helper import extract_valid_hand, boltzmann
 from othello.model import Board, Hand, Node
+from othello.network import DN_OUTPUT_SIZE
 from othello.search import Searcher, MonteCarloSearcher
 
 
@@ -94,21 +96,49 @@ class AlphaZero(AI):
     def _evaluate_board(self, board: Board):
         p, v = self._predict(board)
         p, hands = self._calc_valid_hand_p(p, board)
+        if len(p) == 0:
+            p = np.ones(1)
+            hands = [Hand.pass_hand()]
         return p, hands, v
 
-    def __init__(self, network, exhaust_threshold=8, play_count=30):
+    def __init__(self, network, c=1.0, temperature=1.0, exhaust_threshold=8, play_count=30, history=False):
         super().__init__()
         self.network = network
+        self.c = c
+        self.temperature = temperature
         self.play_count = play_count
         self.exhaust_threshold = exhaust_threshold
+        self.history = [] if history else None
 
         def select_node(node: Node):
-            p, hands, _ = self._evaluate_board(node.board)
-            hand = np.random.choice(hands, p=p)
-            return [node for node in node.children if node.hand.hand == hand.hand][0]
+            if node.children[0].p is None:
+                p, hands, _ = self._evaluate_board(node.board)
+                p = boltzmann(p)
+                tmp = dict(zip([hand.hand for hand in hands], p))
+                for child in node.children:
+                    child.p = tmp[child.hand.hand]
+            t = sum([child.n for child in node.children])
+            t = math.sqrt(t)
+            arc = [(-child.w / child.n if child.n != 0 else 0.0) + self.c * child.p * t / (child.n + 1) for child in
+                   node.children]
+            action = np.argmax(arc)
+            return node.children[action]
 
-        def evaluete(board: Board):
+        def evaluate(board: Board):
             _, _, v = self._evaluate_board(board)
             return v
 
-        self.searcher = MonteCarloSearcher(evaluate=evaluete, select_node=select_node)
+        def select_best_node(node: Node):
+            p = np.array([child.n for child in node.children])
+            p = p / p.sum()
+            p = boltzmann(p, self.temperature)
+            if self.history is not None:
+                policies = [0] * DN_OUTPUT_SIZE
+                for i in range(len(p)):
+                    index = node.children[i].hand.hand[0] * 8 + node.children[i].hand.hand[1]
+                    policies[index] = p[i]
+                self.history.append([node.board.board, policies, None])
+            return np.random.choice([child for child in node.children], p=p)
+
+        self.searcher = MonteCarloSearcher(evaluate=evaluate, select_node=select_node,
+                                           select_best_node=select_best_node)

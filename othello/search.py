@@ -74,6 +74,7 @@ def play_out(board: Board) -> float:
         board = put_and_reverse(hand, board)
     return judge_simple(board)
 
+
 def select_best_node_ucb(node: Node) -> Node:
     return max(node.children, key=lambda x: x.n)
 
@@ -92,7 +93,8 @@ def eval_nodes_ucb(nodes: List[Node], c: float):
 
 
 class MonteCarloSearcher(Searcher):
-    def __init__(self, expansion_threshold=3, evaluate=play_out, select_node=select_node_ucb, select_best_node=select_best_node_ucb):
+    def __init__(self, expansion_threshold=3, evaluate=play_out, select_node=select_node_ucb,
+                 select_best_node=select_best_node_ucb):
         self.expansion_threshold = expansion_threshold
         self.evaluate = evaluate
         self.select_node = select_node
@@ -119,15 +121,18 @@ class MonteCarloSearcher(Searcher):
                 value = self.evaluate(node.board)
 
             node.w += value
+            node.n += 1
             while node.parent:
                 node = node.parent
                 node.w += value
+                node.n += 1
         best_node = self.select_best_node(root_node)
         return best_node.hand, best_node.w
 
     def _expand(self, node: Node) -> List[Node]:
         children = [
-            Node(self._put_and_reverse(hand, node.board), node, hand=hand)
+            Node(self._put_and_reverse(hand, node.board), node, hand=hand) if not hand.is_pass_hand else Node(
+                Board(node.board.board, not node.board.side), node, hand=hand)
             for hand in self._extract_valid_hand(node.board)
         ]
         node.children = children

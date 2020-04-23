@@ -53,9 +53,10 @@ class Node:
 
     """
 
-    def __init__(self, board: Board, parent=None, hand: Hand = None):
+    def __init__(self, board: Board, parent=None, hand: Hand = None, p: float = None):
         self.parent = parent
         self.hand = hand
+        self.p = p
         self.w = 0
         self.n = 0
         self.board = board
