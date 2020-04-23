@@ -1,14 +1,12 @@
-from othello.ai import MiniMaxAI, RandomAI
+from othello.ai import MiniMaxAI, RandomAI, MonteCarloAI, AlphaZero
 from othello.helper import extract_valid_hand, put_and_reverse, judge_simple
 from othello.model import Board
+from othello.network import Network
 from othello.view import view_board
 
 
-def evaluate(sente=False, is_view=False):
+def evaluate(ai1, ai2, sente=False, is_view=False):
     board = Board.init_board()
-    board.side = sente
-    ai1 = RandomAI()
-    ai2 = MiniMaxAI(5)
     if is_view:
         print(view_board(board))
     hands = []
@@ -21,15 +19,11 @@ def evaluate(sente=False, is_view=False):
             hand = ai1.put(board, hands)
         else:
             hand = ai2.put(board, hands)
-        if (board.board == 0).sum() < 12:
-            # 計算時間に余裕があるのでdeepに読む
-            ai2.depth = 8
         hands.append(hand)
         board = put_and_reverse(hand, board)
         if is_view:
             print(view_board(board))
-
-
+    # print(ai2.history)
     if is_view:
         print("=" * 10 + "  GAME OVER  " + "=" * 10)
         x_count = (board.board == 1).sum()
@@ -41,7 +35,10 @@ def evaluate(sente=False, is_view=False):
 def main(play_count):
     result = [0, 0, 0]
     for i in range(play_count):
-        result[evaluate(i % 2 == 0)] += 1
+        ai1 = RandomAI()
+        network = Network()
+        ai2 = AlphaZero(network, play_count=20, history=True)
+        result[evaluate(ai1, ai2, True)] += 1
         if i % (play_count // 10) == 0:
             print(result)
     print("AI 1 win: {}, lose: {}, even: {}".format(result[1], result[-1], result[0]))

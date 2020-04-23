@@ -11,11 +11,13 @@ from othello.network import Network
 MODEL_PATH = 'model/latest.pth'
 
 
-def play(network, device="cpu"):
+def play(network, device="cpu", ai_param=None):
+    if ai_param is None:
+        ai_param = dict(play_count=100)
     board = Board.init_board()
 
-    ai1 = AlphaZero(network, play_count=100, history=True)
-    ai2 = AlphaZero(network, play_count=100, history=True)
+    ai1 = AlphaZero(network, history=True, **ai_param)
+    ai2 = AlphaZero(network, history=True, **ai_param)
     hands = []
     while True:
         if not extract_valid_hand(board):

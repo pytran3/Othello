@@ -22,8 +22,6 @@ class Network(nn.Module):
 
     def predict(self, x) -> Tuple[np.ndarray, float]:
         p, v = self.forward(x)
-        p = F.softmax(p, dim=-1)
-        v = torch.tanh(v)
         p = p.to("cpu").detach().numpy().copy()
         v = v.to("cpu").detach().numpy().copy()
         return p, float(v[0])
@@ -39,6 +37,8 @@ class Network(nn.Module):
         x = torch.squeeze(x, -1)
         p = self.p_clf(x)
         v = self.v_clf(x)
+        p = F.softmax(p, dim=-1)
+        v = torch.tanh(v)
         return p, v
 
 

@@ -12,15 +12,7 @@ from othello.network import Network
 MODEL_PATH = "model/latest.pth"
 
 
-def train(model_path, x, yp, yv, batch_size=128, epoch=10):
-    network = Network()
-    network.load_state_dict(torch.load(model_path))
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(device)
-    network.to(device)
-    for resnet in network.resnet:
-        # なぜ必要なんだ・・・再帰的にやってくれ
-        resnet.to(device)
+def train(network, device, x, yp, yv, batch_size=128, verbose=False):
     network.train()
     x = torch.tensor(x).to(device)
     yp = torch.tensor(yp).to(device)
@@ -50,7 +42,16 @@ def main():
     x = np.array([np.array([i == 1, i == -1], dtype=np.float32) for i in x])
     yp = np.array(yp, dtype=np.float32)
     yv = np.array(yv, dtype=np.float32)
-    train(MODEL_PATH, x, yp, yv, batch_size=16)
+
+    network = Network()
+    network.load_state_dict(torch.load(MODEL_PATH))
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(device)
+    network.to(device)
+    for resnet in network.resnet:
+        # なぜ必要なんだ・・・再帰的にやってくれ
+        resnet.to(device)
+    train(network, device, x, yp, yv, batch_size=16)
 
 
 if __name__ == '__main__':
