@@ -99,10 +99,24 @@ class MonteCarloSearcher(Searcher):
         self.evaluate = evaluate
         self.select_node = select_node
         self.select_best_node = select_best_node
+        self.memo_root = None
 
-    def search_monte_carlo(self, board: Board, play_count=100) -> Tuple[Hand, float]:
-        root_node = Node(board)
-        root_node.children = self._expand(root_node)
+    def search_monte_carlo(self, board: Board, play_count=100, hands: List[Hand] = None) -> Tuple[Hand, float]:
+        if self.memo_root is None or not hands:
+            root_node = Node(board)
+        else:
+            if [i for i in hands if i.is_pass_hand] and False:
+                root_node = Node(board)
+            else:
+                tmp = [child for child in self.memo_root.children if child.hand.hand == hands[-1].hand and child.hand.is_pass_hand == hands[-1].is_pass_hand]
+                if tmp:
+                    root_node = tmp[0]
+                else:
+                    root_node = Node(board)
+        # root_node = Node(board)
+        # print(root_node.n)
+        if len(root_node.children) == 0:
+            root_node.children = self._expand(root_node)
 
         for play_index in range(play_count):
             node = root_node
@@ -127,6 +141,7 @@ class MonteCarloSearcher(Searcher):
                 node.w += value
                 node.n += 1
         best_node = self.select_best_node(root_node)
+        self.memo_root = best_node
         return best_node.hand, best_node.w
 
     def _expand(self, node: Node) -> List[Node]:

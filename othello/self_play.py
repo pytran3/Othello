@@ -5,7 +5,7 @@ import torch
 
 from othello.ai import AlphaZero
 from othello.helper import extract_valid_hand, put_and_reverse, judge_simple
-from othello.model import Board
+from othello.model import Board, Hand
 from othello.network import Network
 
 MODEL_PATH = 'model/latest.pth'
@@ -22,6 +22,7 @@ def play(network, device="cpu", ai_param=None):
     while True:
         if not extract_valid_hand(board):
             board.side ^= True
+            hands.append(Hand.pass_hand())
         if not extract_valid_hand(board):
             break
         if board.side:

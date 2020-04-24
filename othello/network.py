@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 DN_CHANEL = 128
-DN_RESIDUAL_NUM = 16
+DN_RESIDUAL_NUM = 3
 DN_INPUT_SHAPE = (2, 8, 8)
 DN_OUTPUT_SIZE = 64 + 1  # passもある
 

@@ -55,7 +55,8 @@ class MonteCarloAI(MiniMaxAI):
         if 60 - len(hands) > self.exhaust_threshold:
             best_hand, best_score = self.searcher.search_monte_carlo(
                 board,
-                self.play_count
+                self.play_count,
+                hands,
             )
         else:
             best_hands, best_score = self.searcher.search_alpha_beta(
@@ -77,7 +78,8 @@ class AlphaZero(AI):
     def put(self, board: Board, hands: List[Hand]) -> Hand:
         best_hand, best_score = self.searcher.search_monte_carlo(
             board,
-            self.play_count
+            self.play_count,
+            # hands
         )
         return best_hand
 
@@ -140,5 +142,5 @@ class AlphaZero(AI):
                 self.history.append([node.board.board, policies, None])
             return np.random.choice([child for child in node.children], p=p)
 
-        self.searcher = MonteCarloSearcher(evaluate=evaluate, select_node=select_node,
+        self.searcher = MonteCarloSearcher(expansion_threshold=1, evaluate=evaluate, select_node=select_node,
                                            select_best_node=select_best_node)
