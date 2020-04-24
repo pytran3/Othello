@@ -38,6 +38,7 @@ def play(network, device="cpu", ai_param=None):
     for x in history1:
         x[-1] = result
     for x in history2:
+        x[0] = x[0] * -1
         x[-1] = -result
     return history1 + history2
 

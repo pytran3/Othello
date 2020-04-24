@@ -84,7 +84,11 @@ class AlphaZero(AI):
         return best_hand
 
     def _predict(self, board: Board):
-        board = np.array([[board.board == 1, board.board == -1]])
+        if board.side is False:
+            board = board.board * -1
+        else:
+            board = board.board
+        board = np.array([[board == 1, board == -1]])
         p, v = self.network.predict(board)
         return p[0, :], v
 
