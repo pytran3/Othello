@@ -20,10 +20,11 @@ def train(network, device, x, yp, yv, batch_size=128, verbose=False):
     dataset = TensorDataset(x, yp, yv)
     data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    optimizer = optim.Adam(network.parameters(), lr=0.000001)
+    optimizer = optim.Adam(network.parameters(), lr=0.0001)
     p_criterion = lambda policy, y_policy: torch.sum((-policy *
                                                       (1e-8 + y_policy.float()).float().log()), 1)
     v_criterion = nn.MSELoss()
+    p_loss_sum, v_loss_sum = 0.0, 0.0
     for x, yp, yv in data_loader:
         optimizer.zero_grad()
         p, v = network(x)
@@ -31,7 +32,9 @@ def train(network, device, x, yp, yv, batch_size=128, verbose=False):
         v_loss = v_criterion(v, yv)
         (p_loss + v_loss).sum().backward()
         optimizer.step()
-    print(p_loss.sum().item(), v_loss.sum().item())
+        p_loss_sum += p_loss.sum().item()
+        v_loss_sum += v_loss.sum().item()
+    return p_loss_sum, v_loss_sum
 
 
 def main():

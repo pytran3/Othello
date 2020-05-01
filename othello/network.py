@@ -64,6 +64,19 @@ class ResNet(nn.Module):
 
 if __name__ == '__main__':
     # test
-    input = np.zeros((2, 2, 8, 8), dtype=np.float32)
-    hoge = Network().predict(input)
-    print(hoge)
+    from othello.model import Board
+    from othello.helper import put_and_reverse
+
+    input = Board.init_board()
+    # input = put_and_reverse((2, 3), input)
+    x = np.array([[input.board == 1, input.board == -1]], dtype=np.float32)
+    network = Network()
+    network.load_state_dict(torch.load("model/latest.pth"))
+    p, v = network(x)
+    p = p.to("cpu").detach().numpy().copy()
+    v = v.to("cpu").detach().numpy().copy()
+    print(sorted(p[-1])[::-1])
+    p = p[:, :-1].reshape((8, 8))
+    np.set_printoptions(precision=1)
+    [print(p[i, :]) for i in range(8)]
+    print(v)

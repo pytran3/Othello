@@ -8,14 +8,13 @@ from othello.self_play import play
 from othello.train import train
 
 MODEL_PATH = 'model/latest.pth'
-BEST_MODEL_PATH = 'model/best.pth'
+DATETIME_MODEL_PATH = 'model/{}{}{}.pth'
 
 PLAY_COUNT = 200
-EPOCH = 5
-EVALUATE_PLAY_COUNT = 50
-
+EPOCH = 1000
+PATIENCE = 5
 AI_PARAM = {
-    "play_count": 50
+    "play_count": 100
 }
 
 
@@ -40,6 +39,7 @@ def main():
         print("{} train {} {}".format("=" * 10, train_num, "=" * 10))
         # play out
         history = []
+        network.eval()
         for i in range(PLAY_COUNT):
             tmp = play(network, device, AI_PARAM)
             history.extend(tmp)
@@ -48,29 +48,26 @@ def main():
 
         # train
         network.train()
+        patience = 0
+        best_p_loss = float("inf")
+        print('history num:', len(history))
         for i in range(EPOCH):
+            if patience > PATIENCE:
+                break
+            patience += 1
             x, yp, yv = zip(*history)
             x = np.array([np.array([i == 1, i == -1], dtype=np.float32) for i in x])
             yp = np.array(yp, dtype=np.float32)
             yv = np.array(yv, dtype=np.float32)
-            train(network, device, x, yp, yv, verbose=True)
+            p_loss, v_loss = train(network, device, x, yp, yv, verbose=True)
+            print(i, p_loss / len(history), v_loss / len(history))
+            if p_loss < best_p_loss:
+                patience = 0
+                best_p_loss = p_loss
 
-        # evaluate
-        # network.eval()
-        # result = [0, 0, 0]
-        # for i in range(EVALUATE_PLAY_COUNT):
-        #     latest_ai = AlphaZero(network, **AI_PARAM)
-        #     best_ai = RandomAI()
-        #     result[evaluate(latest_ai, best_ai, sente=i % 2 == 0)] += 1
-        # # latest
-        # win = result[1]
-        # lose = result[-1]
-        # even = result[0]
-        # print("latest model: win={}, lose={}, even={}".format(win, lose, even))
-        # if win > lose:
-        #     best_network = network
-        #     torch.save(best_network.state_dict(), BEST_MODEL_PATH)
         torch.save(network.state_dict(), MODEL_PATH)
+        today = datetime.now()
+        torch.save(network.state_dict(), DATETIME_MODEL_PATH.format(today.year, today.month, today.day))
         print("train {}  finish. time {}".format(train_num, (datetime.now() - start).seconds))
 
 

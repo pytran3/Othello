@@ -135,7 +135,7 @@ class AlphaZero(AI):
             return v
 
         def select_best_node(node: Node):
-            p = np.array([child.n for child in node.children])
+            p = np.array([child.n + 1 for child in node.children])
             p = p / p.sum()
             p = boltzmann(p, self.temperature)
             if self.history is not None:
