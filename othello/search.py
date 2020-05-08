@@ -137,6 +137,7 @@ class MonteCarloSearcher(Searcher):
             node.w += value
             node.n += 1
             while node.parent:
+                value = - value
                 node = node.parent
                 node.w += value
                 node.n += 1
