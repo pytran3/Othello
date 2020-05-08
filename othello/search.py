@@ -105,7 +105,7 @@ class MonteCarloSearcher(Searcher):
         if self.memo_root is None or not hands:
             root_node = Node(board)
         else:
-            if [i for i in hands if i.is_pass_hand] and False:
+            if [i for i in hands if i.is_pass_hand]:
                 root_node = Node(board)
             else:
                 tmp = [child for child in self.memo_root.children if child.hand.hand == hands[-1].hand and child.hand.is_pass_hand == hands[-1].is_pass_hand]
