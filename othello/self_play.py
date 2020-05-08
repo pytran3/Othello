@@ -11,7 +11,7 @@ from othello.network import Network
 MODEL_PATH = 'model/latest.pth'
 
 
-def play(network, device="cpu", ai_param=None):
+def play(network, ai_param=None):
     if ai_param is None:
         ai_param = dict(play_count=100)
     board = Board.init_board()
@@ -33,8 +33,8 @@ def play(network, device="cpu", ai_param=None):
         board = put_and_reverse(hand, board)
 
     result = judge_simple(board)
-    history1 = ai1.history
-    history2 = ai2.history
+    history1 = ai1.history if isinstance(ai1, AlphaZero) else []
+    history2 = ai2.history if isinstance(ai1, AlphaZero) else []
     for x in history1:
         x[-1] = result
     for x in history2:

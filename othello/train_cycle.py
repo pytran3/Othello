@@ -41,7 +41,7 @@ def main():
         history = []
         network.eval()
         for i in range(PLAY_COUNT):
-            tmp = play(network, device, AI_PARAM)
+            tmp = play(network, AI_PARAM)
             history.extend(tmp)
             if i % 10 == 0:
                 print("self play {}, time {}".format(i, (datetime.now() - start).seconds))
