@@ -114,7 +114,7 @@ class MonteCarloSearcher(Searcher):
                     root_node = tmp[0]
                 else:
                     root_node = Node(board)
-        root_node = Node(board)
+        # root_node = Node(board)
         # print(root_node.n)
         if len(root_node.children) == 0:
             root_node.children = self._expand(root_node)
