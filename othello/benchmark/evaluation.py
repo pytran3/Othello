@@ -3,7 +3,7 @@ import torch
 from othello.ai import MiniMaxAI, RandomAI, MonteCarloAI, AlphaZero
 from othello.helper import extract_valid_hand, put_and_reverse, judge_simple
 from othello.model import Board, Hand
-from othello.network import Network
+from othello.network import Network, LightNetwork
 from othello.view import view_board
 
 
@@ -16,7 +16,7 @@ def evaluate(ai1, ai2, sente=True, is_view=False):
         if not extract_valid_hand(board):
             board.side ^= True
             hands.append(Hand.pass_hand())
-            print("pass hand!!")
+            # print("pass hand!!")
         if not extract_valid_hand(board):
             break
         if board.side is sente:
@@ -41,19 +41,17 @@ def main(play_count):
     result = [0, 0, 0]
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(device)
-    network = Network(device)
-    network.load_state_dict(torch.load('../model/latest.pth'))
+    network = LightNetwork(device)
+    network.load_state_dict(torch.load('../light_model/latest.pth'))
     network.eval()
     network.to(device)
-    for resnet in network.resnet:
-        resnet.to(device)
-    ai2 = AlphaZero(network, play_count=50, temperature=1000000, history=True)
+    ai2 = AlphaZero(network, play_count=100, temperature=1, c=0.1, history=False)
     # ai2 = MonteCarloAI(play_count=30)
     for i in range(play_count):
-        # ai1 = MonteCarloAI(play_count=50)
+        # ai2 = MonteCarloAI(play_count=100, exhaust_threshold=0)
         ai1 = RandomAI()
-        # ai1 = MonteCarloAI(play_count=30)
-        result[evaluate(ai1, ai2, True)] += 1
+        # ai2 = MiniMaxAI(depth=6, exhaust_threshold=8)
+        result[evaluate(ai1, ai2, True, False)] += 1
         if i % (play_count // 10) == 0:
             print(result)
     print("AI 1 win: {}, lose: {}, even: {}".format(result[1], result[-1], result[0]))

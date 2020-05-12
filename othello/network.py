@@ -62,6 +62,36 @@ class ResNet(nn.Module):
         return x
 
 
+class LightNetwork(nn.Module):
+    def __init__(self, device="cpu"):
+        super().__init__()
+        self.conv = nn.Conv2d(2, DN_CHANEL, 3, padding=1)
+        self.resnet = ResNet()
+        self.p_clf = nn.Linear(DN_CHANEL, DN_OUTPUT_SIZE)
+        self.v_clf = nn.Linear(DN_CHANEL, 1)
+        self._device = device
+
+    def predict(self, x) -> Tuple[np.ndarray, float]:
+        p, v = self.forward(x)
+        p = p.to("cpu").detach().numpy().copy()
+        v = v.to("cpu").detach().numpy().copy()
+        return p, float(v[0])
+
+    def forward(self, x) -> Tuple[torch.Tensor, torch.Tensor]:
+        if isinstance(x, np.ndarray):
+            x = torch.from_numpy(x.astype(np.float32)).clone().to(self._device)
+        x = self.conv(x)
+        x = self.resnet(x)
+        x = F.max_pool2d(x, kernel_size=x.size()[2:])
+        x = torch.squeeze(x, -1)
+        x = torch.squeeze(x, -1)
+        p = self.p_clf(x)
+        v = self.v_clf(x)
+        p = F.softmax(p, dim=-1)
+        v = torch.tanh(v)
+        return p, v
+
+
 if __name__ == '__main__':
     # test
     from othello.model import Board
