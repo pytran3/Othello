@@ -65,6 +65,7 @@ class Searcher:
 
 
 def play_out(board: Board) -> float:
+    root_board = board
     while not is_finished(board):
         valid_hands = extract_valid_hand(board)
         if len(valid_hands) == 0:
@@ -72,7 +73,7 @@ def play_out(board: Board) -> float:
             continue
         hand = np.random.choice(valid_hands)
         board = put_and_reverse(hand, board)
-    return judge_simple(board)
+    return judge_simple(board) * (-1 if root_board.side else 1)
 
 
 def select_best_node_ucb(node: Node) -> Node:
@@ -113,7 +114,7 @@ class MonteCarloSearcher(Searcher):
                     root_node = tmp[0]
                 else:
                     root_node = Node(board)
-        # root_node = Node(board)
+        root_node = Node(board)
         # print(root_node.n)
         if len(root_node.children) == 0:
             root_node.children = self._expand(root_node)
@@ -126,7 +127,7 @@ class MonteCarloSearcher(Searcher):
             if node.board.is_finished is None:
                 node.board.is_finished = is_finished(node.board)
             if node.board.is_finished:
-                value = judge_simple(node.board)
+                value = judge_simple(node.board) * (-1 if node.board.side else 1)
             else:
                 if node.n >= self.expansion_threshold:
                     # expansion
@@ -137,7 +138,7 @@ class MonteCarloSearcher(Searcher):
             node.w += value
             node.n += 1
             while node.parent:
-                value = - value
+                value = -value
                 node = node.parent
                 node.w += value
                 node.n += 1

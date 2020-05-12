@@ -102,6 +102,8 @@ class AlphaZero(AI):
     def _evaluate_board(self, board: Board):
         p, v = self._predict(board)
         p, hands = self._calc_valid_hand_p(p, board)
+        # print("select node:", p)
+        # print("select node:", v)
         if len(p) == 0:
             p = np.ones(1)
             hands = [Hand.pass_hand()]
@@ -119,7 +121,6 @@ class AlphaZero(AI):
         def select_node(node: Node):
             if node.children[0].p is None:
                 p, hands, _ = self._evaluate_board(node.board)
-                p = boltzmann(p)
                 tmp = dict(zip([hand.hand for hand in hands], p))
                 for child in node.children:
                     child.p = tmp[child.hand.hand]
@@ -135,7 +136,8 @@ class AlphaZero(AI):
             return v
 
         def select_best_node(node: Node):
-            p = np.array([child.n + 1 for child in node.children])
+            p = np.array([child.n for child in node.children])
+            # print("select best:", p)
             p = p / p.sum()
             p = boltzmann(p, self.temperature)
             if self.history is not None:
