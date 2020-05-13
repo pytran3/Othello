@@ -73,7 +73,7 @@ def play_out(board: Board) -> float:
             continue
         hand = np.random.choice(valid_hands)
         board = put_and_reverse(hand, board)
-    return judge_simple(board) * (-1 if root_board.side else 1)
+    return judge_simple(board) * (1 if root_board.side else -1)
 
 
 def select_best_node_ucb(node: Node) -> Node:
@@ -94,14 +94,6 @@ def eval_nodes_ucb(nodes: List[Node], c: float):
 
 
 class MonteCarloSearcher(Searcher):
-    def __init__(self, expansion_threshold=3, evaluate=play_out, select_node=select_node_ucb,
-                 select_best_node=select_best_node_ucb):
-        self.expansion_threshold = expansion_threshold
-        self.evaluate = evaluate
-        self.select_node = select_node
-        self.select_best_node = select_best_node
-        self.memo_root = None
-
     def search_monte_carlo(self, board: Board, play_count=100, hands: List[Hand] = None) -> Tuple[Hand, float]:
         if self.memo_root is None or not hands:
             root_node = Node(board)
@@ -118,7 +110,7 @@ class MonteCarloSearcher(Searcher):
         # print(root_node.n)
         if len(root_node.children) == 0:
             root_node.children = self._expand(root_node)
-
+        # root_node.parent = None
         for play_index in range(play_count):
             node = root_node
             while node.children:
@@ -127,14 +119,14 @@ class MonteCarloSearcher(Searcher):
             if node.board.is_finished is None:
                 node.board.is_finished = is_finished(node.board)
             if node.board.is_finished:
-                value = judge_simple(node.board) * (-1 if node.board.side else 1)
+                value = judge_simple(node.board) * (1 if node.board.side else -1)
             else:
                 if node.n >= self.expansion_threshold:
                     # expansion
                     node.children = self._expand(node)
                     node = self.select_node(node)
                 value = self.evaluate(node.board)
-
+            value = -value  # finishしている時は手番が相手にいっているため
             node.w += value
             node.n += 1
             while node.parent:
@@ -145,6 +137,14 @@ class MonteCarloSearcher(Searcher):
         best_node = self.select_best_node(root_node)
         self.memo_root = best_node
         return best_node.hand, best_node.w
+
+    def __init__(self, expansion_threshold=5, evaluate=play_out, select_node=select_node_ucb,
+                 select_best_node=select_best_node_ucb):
+        self.expansion_threshold = expansion_threshold
+        self.evaluate = evaluate
+        self.select_node = select_node
+        self.select_best_node = select_best_node
+        self.memo_root = None
 
     def _expand(self, node: Node) -> List[Node]:
         children = [
