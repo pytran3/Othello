@@ -87,7 +87,7 @@ def select_node_ucb(node: Node, c: float = 1.0) -> Node:
 
 def eval_nodes_ucb(nodes: List[Node], c: float):
     def ucb(node: Node):
-        return node.w + c * math.sqrt(2 * math.log(n) / (node.n + 1e-8))
+        return -node.w + c * math.sqrt(2 * math.log(n) / (node.n + 1e-8))
 
     n = sum([node.n for node in nodes])
     return [(ucb(x) if x.n else 1e18, x) for x in nodes]
@@ -126,7 +126,6 @@ class MonteCarloSearcher(Searcher):
                     node.children = self._expand(node)
                     node = self.select_node(node)
                 value = self.evaluate(node.board)
-            value = -value  # finishしている時は手番が相手にいっているため
             node.w += value
             node.n += 1
             while node.parent:
